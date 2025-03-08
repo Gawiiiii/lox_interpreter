@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+    static boolean hadError = false;
+    //程序入口
     public static void main(String[] args)  throws IOException{
         if(args.length>1){
             System.out.println("Usage: jlox [script]");
@@ -20,16 +22,45 @@ public class Lox {
         }
     }
 
+    //以文件形式编译
     private static void runFile(String path) throws IOException{
         byte[] bytes=Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
+        if(hadError) System.exit(65);
     }
 
+    //从命令行编译
     private static void runPrompt() throws IOException{
         InputStreamReader input=new InputStreamReader(System.in);
         BufferedReader reader=new BufferedReader(input);
         for(;;){
             System.out.print("> ");
+            String line=reader.readLine();
+            if(line==null) break;
+            run(line);
+            hadError = false;
         }
+    }
+
+    //核心运行函数
+    private static void run(String source){
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
+
+        /*tobedone: 暂时只打印token */
+        for(Token token : tokens){
+            System.out.println(token);
+        }
+    }
+
+    //错误处理函数
+    static void error(int line, String message){
+        report(line, "", message);
+    }
+
+    //error()的工具方法
+    private static void report(int line, String where, String message){
+        System.err.println("[line " + line + "] Error" + where + ": " + message);
+        hadError = true;
     }
 }
