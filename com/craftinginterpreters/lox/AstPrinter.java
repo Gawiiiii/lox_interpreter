@@ -27,7 +27,7 @@ public class AstPrinter implements Expr.Visitor<String> {
         return parenthesize(expr.operator.lexeme, expr.right);
     }
 
-    //处理处字面量外每种类型都有的子表达式
+    //递归处理除字面量外每种类型都有的子表达式
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
 

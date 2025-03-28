@@ -9,7 +9,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+    private static final Interpreter interpreter = new Interpreter();//在一个repl会话中重复使用一个解释器，以保证全局变量在整个会话中持续存在
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
     //程序入口
     public static void main(String[] args)  throws IOException{
         if(args.length>1){
@@ -26,7 +28,9 @@ public class Lox {
     private static void runFile(String path) throws IOException{
         byte[] bytes=Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
+        //使用exit code告知有错误以及错误类型
         if(hadError) System.exit(65);
+        if(hadRuntimeError) System.exit(70);
     }
 
     //从命令行编译
@@ -56,7 +60,8 @@ public class Lox {
         Expr expression = parser.parse();
 
         if(hadError) return;
-        System.out.println(new AstPrinter().print(expression));
+        //System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     //错误处理函数
@@ -76,5 +81,10 @@ public class Lox {
         } else {
             report(token.line, " at '" + token.lexeme + "'", message);
         }
+    }
+
+    static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() + "\n[line " + error.token.line + "]");
+        hadRuntimeError = true;
     }
 }
